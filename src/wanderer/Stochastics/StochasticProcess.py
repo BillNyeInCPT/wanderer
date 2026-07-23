@@ -1,5 +1,6 @@
 #Discretized stochastic process class
-
+import attr
+import numpy as np
 from attr import dataclass
 
 @dataclass
@@ -8,6 +9,7 @@ class StochasticProcess:
     timeHorizon: float
     timeStep: float
     method: str
+    num_paths: int 
 
     @property
     def timeMean(self) -> np.ndarray:
@@ -69,3 +71,7 @@ class StochasticProcess:
             timeHorizon=sliced_paths.shape[1] * self.timeStep,
             method=f"{self.method}_sliced",
         )
+
+    @property
+    def timeGrid(self) -> np.ndarray:
+        return np.arange(0, self.timeHorizon + self.timeStep, self.timeStep)
