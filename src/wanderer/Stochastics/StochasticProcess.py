@@ -1,5 +1,6 @@
 #Discretized stochastic process class
 import attr
+import json
 import numpy as np
 from attr import dataclass
 
@@ -22,10 +23,37 @@ class StochasticProcess:
     def __len__(self):
         return int(self.timeHorizon / self.timeStep)
 
+    @property
+    def timeGrid(self) -> np.ndarray:
+        n_cols = self.paths.shape[1]
+        return np.linspace(0, self.timeHorizon, n_cols)
+
     @classmethod
-    def from_csv(cls, csv, timeStep = 1,) -> "StochasticProcess":
-        data = np.loadtxt(csv, delimiter=',')
-        return cls(paths=data, timeHorizon=data.shape[1]*timeStep, timeStep=timeStep, method="from_csv")
+    def from_json(cls, json_file: str) -> "StochasticProcess":
+        with open(json_file, "r") as f:
+            data = json.load(f)
+
+        return cls(
+            paths=np.array(data["paths"]),
+            timeHorizon=data["timeHorizon"],
+            timeStep=data["timeStep"],
+            method=data["method"],
+            num_paths=data["num_paths"],
+        )
+
+    @classmethod
+    def to_json(cls, stochastic_process: "StochasticProcess", json_file: str):
+        data = {
+            "paths": stochastic_process.paths.tolist(),
+            "timeHorizon": stochastic_process.timeHorizon,
+            "timeStep": stochastic_process.timeStep,
+            "method": stochastic_process.method,
+            "num_paths": stochastic_process.num_paths,
+        }
+
+        with open(json_file, "w") as f:
+            json.dump(data, f, indent=4)
+
 
     def time_slice(self, start: float = 0.0, end: float = None) -> "StochasticProcess":
         if end is None:
@@ -72,6 +100,4 @@ class StochasticProcess:
             method=f"{self.method}_sliced",
         )
 
-    @property
-    def timeGrid(self) -> np.ndarray:
-        return np.arange(0, self.timeHorizon + self.timeStep, self.timeStep)
+    

@@ -13,15 +13,15 @@ class BrownianMotionGenerator:
         self.num_paths = num_paths
         
 
-    def generate_BrownianMotion(self, num_paths):
+    def generate_BrownianMotion(self):
         np.random.seed(self.seed)  # Set the seed for reproducibility
         num_steps = int(self.time_horizon / self.time_step)
-        paths = np.zeros((num_paths, num_steps + 1))
+        paths = np.zeros((self.num_paths, num_steps + 1))
         paths[:, 0] = 0  # Initial value of Brownian motion is 0
 
         for i in range(num_steps):
             dt = self.time_step
-            dW = np.random.normal(0, np.sqrt(dt), size=num_paths)
+            dW = np.random.normal(0, np.sqrt(dt), size=self.num_paths)
             paths[:, i + 1] = paths[:, i] + self.mu * dt + self.sigma * dW
 
         return StochasticProcess(paths=paths, timeHorizon=self.time_horizon, timeStep=self.time_step, method=f"BrownianMotion_{self.seed}", num_paths=self.num_paths)
