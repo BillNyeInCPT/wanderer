@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>The Path Less Travelled</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="KL_files/libs/clipboard/clipboard.min.js"></script>
+<script src="KL_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="KL_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="KL_files/libs/quarto-html/popper.min.js"></script>
+<script src="KL_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="KL_files/libs/quarto-html/anchor.min.js"></script>
+<link href="KL_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="KL_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="KL_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="KL_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="KL_files/libs/bootstrap/bootstrap-e1355de8b59ebe66efb5c4bf961897a1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">The Path Less Travelled</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This notebook will contain all the driving code for my honours project including synthetic data generation, real data preprocessing, model training, and evaluation.</p>
+<div id="1ea323a1" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> wanderer <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#KL decomposition of the OUP</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#load the OUP process from json</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>OUP_process <span class="op">=</span> StochasticProcess.from_json(<span class="st">'OUP_process_EM.json'</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>coeffs, eigenfunctions <span class="op">=</span> KLDecomposition(OUP_process, <span class="dv">100</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>OUP_reconstructed_process <span class="op">=</span> reconstructFromKL(coeffs, eigenfunctions, OUP_process.timeGrid, OUP_process.timeHorizon)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#plot the original paths</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(OUP_process.num_paths):</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    plt.plot(OUP_process.timeGrid, OUP_process.paths[i], alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Original Ornstein-Uhlenbeck Process Paths'</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">#plot the reconstructed paths</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(OUP_reconstructed_process.num_paths):</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    plt.plot(OUP_reconstructed_process.timeGrid, OUP_reconstructed_process.paths[i], alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Reconstructed Ornstein-Uhlenbeck Process Paths from KL Decomposition'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Text(0.5, 1.0, 'Reconstructed Ornstein-Uhlenbeck Process Paths from KL Decomposition')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="KL_files/figure-html/cell-2-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="KL_files/figure-html/cell-2-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="6a6c8caa" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#plot l1 and l2 reconstruction error over time</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>errors <span class="op">=</span> np.<span class="bu">abs</span>(OUP_reconstructed_process.paths <span class="op">-</span> OUP_process.paths)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>avg_errors <span class="op">=</span> np.mean(errors, axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#plot the average reconstruction error over time</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>plt.plot(OUP_process.timeGrid, avg_errors, color<span class="op">=</span><span class="st">'red'</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Average Absolute Reconstruction Error Over Time (KL Decomposition)'</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>errors_l2 <span class="op">=</span> np.sqrt(np.mean((OUP_reconstructed_process.paths <span class="op">-</span> OUP_process.paths)<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#plot the average l2 reconstruction error over time</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>plt.plot(OUP_process.timeGrid, errors_l2, color<span class="op">=</span><span class="st">'blue'</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Average L2 Reconstruction Error Over Time (KL Decomposition)'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>Text(0.5, 1.0, 'Average L2 Reconstruction Error Over Time (KL Decomposition)')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="KL_files/figure-html/cell-3-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="KL_files/figure-html/cell-3-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="ece44cfc" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#slice the OUP process to one year intervals and stack them into a new process</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>sliced_processes <span class="op">=</span> []</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, OUP_process.timeHorizon, <span class="dv">1</span>):</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    sliced_processes.append(OUP_process.time_slice(i, i<span class="op">+</span><span class="dv">1</span>))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#stack the paths of the sliced processes into a new array</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(sliced_processes)):</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        stacked_paths <span class="op">=</span> sliced_processes[i].paths</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        stacked_paths <span class="op">=</span> np.vstack((stacked_paths, sliced_processes[i].paths))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#find new time horizon</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>new_time_horizon <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># create a new process with the stacked paths</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>new_process <span class="op">=</span> StochasticProcess(paths<span class="op">=</span>stacked_paths, timeHorizon<span class="op">=</span>new_time_horizon, timeStep<span class="op">=</span>OUP_process.timeStep, method<span class="op">=</span><span class="st">'stacked'</span>, num_paths<span class="op">=</span>stacked_paths.shape[<span class="dv">0</span>])</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">#print dim of original process and new process</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'Original Process Shape: </span><span class="sc">{</span>OUP_process<span class="sc">.</span>paths<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'New Process Shape: </span><span class="sc">{</span>new_process<span class="sc">.</span>paths<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co">#derive the KL coefficients of the new process</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>coeffs, eigenfunctions <span class="op">=</span> KLDecomposition(new_process, <span class="dv">100</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Original Process Shape: (1000, 1001)
+New Process Shape: (10000, 100)</code></pre>
+</div>
+</div>
+<div id="3f1b084a" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#plot the real and imaginary empirical distributions of the first 10 KL coefficients of the new process</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10</span>):</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    plt.subplot(<span class="dv">2</span>, <span class="dv">5</span>, i<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    plt.hist(coeffs[:, i].real, bins<span class="op">=</span><span class="dv">30</span>, density<span class="op">=</span><span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, color<span class="op">=</span><span class="st">'blue'</span>, label<span class="op">=</span><span class="st">'Real Part'</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#plt.hist(coeffs[:, i].imag, bins=30, density=True, alpha=0.5, color='orange', label='Imaginary Part')</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f'Coefficient </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">'Coefficient Value'</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">'Density'</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    plt.legend()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="KL_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="751e730d" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#plot sliced paths of the new process</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(new_process.num_paths):</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    plt.plot(new_process.timeGrid, new_process.paths[i], alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Sliced Paths of the New Process (1 Year Intervals)'</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># out of time simulation for a time period of 1 year</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>out_of_time_simulation <span class="op">=</span> outOfTimeSimulationKL(distributions<span class="op">=</span>coeffs, eigenfunctions <span class="op">=</span> eigenfunctions, time_horizon<span class="op">=</span> new_process.timeHorizon, time_step<span class="op">=</span>new_process.timeStep, num_paths<span class="op">=</span><span class="dv">1000</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#plot out of time simulation paths</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(out_of_time_simulation.num_paths):</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    plt.plot(out_of_time_simulation.timeGrid, out_of_time_simulation.paths[i], alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Out of Time Simulation Paths (1 Year)'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> <span style="font-style:italic;color:rgb(95,135,135)">#plot sliced paths of the new process</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> <span class="ansi-black-fg ansi-yellow-bg">plt</span>.figure(figsize=(<span class="ansi-green-fg">10</span>, <span class="ansi-green-fg">6</span>))
+<span class="ansi-green-fg">      3</span> <span style="font-weight:bold;color:rgb(0,135,0)">for</span> i <span style="font-weight:bold;color:rgb(175,0,255)">in</span> <span style="color:rgb(0,135,0)">range</span>(new_process.num_paths):
+<span class="ansi-green-fg">      4</span>     plt.plot(new_process.timeGrid, new_process.paths[i], alpha=<span class="ansi-green-fg">0.5</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">&lt;stringsource&gt;:69</span>, in <span class="ansi-cyan-fg">cfunc.to_py.__Pyx_CFunc_b0409f__29_pydevd_sys_monitoring_cython_object__lParen__etc_to_py_4code_4line.wrap</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">69</span> <span class="ansi-yellow-fg">'Could not get source, probably due dynamically evaluated source code.'</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">_pydevd_sys_monitoring/_pydevd_sys_monitoring_cython.pyx:1505</span>, in <span class="ansi-cyan-fg">_pydevd_sys_monitoring_cython._line_event</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1505</span> <span class="ansi-yellow-fg">'Could not get source, probably due dynamically evaluated source code.'</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">_pydevd_sys_monitoring/_pydevd_sys_monitoring_cython.pyx:1547</span>, in <span class="ansi-cyan-fg">_pydevd_sys_monitoring_cython._internal_line_event</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1547</span> <span class="ansi-yellow-fg">'Could not get source, probably due dynamically evaluated source code.'</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">_pydevd_sys_monitoring/_pydevd_sys_monitoring_cython.pyx:1348</span>, in <span class="ansi-cyan-fg">_pydevd_sys_monitoring_cython._stop_on_breakpoint</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1348</span> <span class="ansi-yellow-fg">'Could not get source, probably due dynamically evaluated source code.'</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">_pydevd_sys_monitoring/_pydevd_sys_monitoring_cython.pyx:1990</span>, in <span class="ansi-cyan-fg">_pydevd_sys_monitoring_cython._do_wait_suspend</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1990</span> <span class="ansi-yellow-fg">'Could not get source, probably due dynamically evaluated source code.'</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Documents/Main/School/Uni/2026/W - Project/Notebooks/.venv/lib/python3.14/site-packages/debugpy/_vendored/pydevd/pydevd.py:2234</span>, in <span class="ansi-cyan-fg">PyDB.do_wait_suspend</span><span class="ansi-blue-fg">(self, thread, frame, event, arg, exception_type)</span>
+<span class="ansi-green-fg">   2231</span>             from_this_thread.append(frame_custom_thread_id)
+<span class="ansi-green-fg">   2233</span>     <span style="font-weight:bold;color:rgb(0,135,0)">with</span> <span style="color:rgb(0,135,0)">self</span>._threads_suspended_single_notification.notify_thread_suspended(thread_id, thread, stop_reason):
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2234</span>         keep_suspended = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_do_wait_suspend</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">thread</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">frame</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">event</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">arg</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">trace_suspend_type</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">from_this_thread</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">frames_tracker</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2236</span> frames_list = <span style="font-weight:bold;color:rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">   2238</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> keep_suspended:
+<span class="ansi-green-fg">   2239</span>     <span style="font-style:italic;color:rgb(95,135,135)"># This means that we should pause again after a set next statement.</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Documents/Main/School/Uni/2026/W - Project/Notebooks/.venv/lib/python3.14/site-packages/debugpy/_vendored/pydevd/pydevd.py:2303</span>, in <span class="ansi-cyan-fg">PyDB._do_wait_suspend</span><span class="ansi-blue-fg">(self, thread, frame, event, arg, trace_suspend_type, from_this_thread, frames_tracker)</span>
+<span class="ansi-green-fg">   2300</span>                 queue.put(internal_cmd)
+<span class="ansi-green-fg">   2301</span>                 wait_timeout = TIMEOUT_FAST
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2303</span>         <span class="ansi-black-fg ansi-yellow-bg">notify_event</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">wait</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">wait_timeout</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2304</span>         notify_event.clear()
+<span class="ansi-green-fg">   2306</span> <span style="font-weight:bold;color:rgb(0,135,0)">finally</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/lib/python3.14/threading.py:670</span>, in <span class="ansi-cyan-fg">Event.wait</span><span class="ansi-blue-fg">(self, timeout)</span>
+<span class="ansi-green-fg">    668</span> signaled = <span style="color:rgb(0,135,0)">self</span>._flag
+<span class="ansi-green-fg">    669</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> signaled:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">670</span>     signaled = <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_cond</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">wait</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    671</span> <span style="font-weight:bold;color:rgb(0,135,0)">return</span> signaled
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/lib/python3.14/threading.py:373</span>, in <span class="ansi-cyan-fg">Condition.wait</span><span class="ansi-blue-fg">(self, timeout)</span>
+<span class="ansi-green-fg">    371</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    372</span>     <span style="font-weight:bold;color:rgb(0,135,0)">if</span> timeout &gt; <span class="ansi-green-fg">0</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">373</span>         gotit = <span class="ansi-black-fg ansi-yellow-bg">waiter</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">acquire</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg ansi-bold">True</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">timeout</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    374</span>     <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    375</span>         gotit = waiter.acquire(<span style="font-weight:bold;color:rgb(0,135,0)">False</span>)
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
+</div>
+</div>
+</div>
+<div id="c21017d1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#run KL on unslice paths</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>coeffs_unsliced, eigenfunctions_unsliced <span class="op">=</span> KLDecomposition(OUP_process, <span class="dv">100</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#simulate out of time paths using the unsliced KL coefficients and eigenfunctions</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>out_of_time_simulation_unsliced <span class="op">=</span> outOfTimeSimulationKL(distributions<span class="op">=</span>coeffs_unsliced, eigenfunctions <span class="op">=</span> eigenfunctions_unsliced, time_horizon<span class="op">=</span> OUP_process.timeHorizon, time_step<span class="op">=</span>OUP_process.timeStep, num_paths<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#plot out of time simulation paths</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(out_of_time_simulation_unsliced.num_paths):</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    plt.plot(out_of_time_simulation_unsliced.timeGrid, out_of_time_simulation_unsliced.paths[i], alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Out of Time Simulation Paths (Unsliced KL)'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 5</span>
+<span class="ansi-green-fg">      1</span> <span style="font-style:italic;color:rgb(95,135,135)">#run KL on unslice paths</span>
+<span class="ansi-green-fg">      2</span> coeffs_unsliced, eigenfunctions_unsliced = KLDecomposition(OUP_process, <span class="ansi-green-fg">100</span>)
+<span class="ansi-green-fg">      3</span> 
+<span class="ansi-green-fg">      4</span> <span style="font-style:italic;color:rgb(95,135,135)">#simulate out of time paths using the unsliced KL coefficients and eigenfunctions</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">5</span> out_of_time_simulation_unsliced = outOfTimeSimulationKL(distributions=coeffs_unsliced, eigenfunctions = eigenfunctions_unsliced, time_horizon= OUP_process.timeHorizon, time_step=OUP_process.timeStep, num_paths=<span class="ansi-green-fg">100</span>)
+<span class="ansi-green-fg">      6</span> 
+<span class="ansi-green-fg">      7</span> <span style="font-style:italic;color:rgb(95,135,135)">#plot out of time simulation paths</span>
+<span class="ansi-green-fg">      8</span> plt.figure(figsize=(<span class="ansi-green-fg">10</span>, <span class="ansi-green-fg">6</span>))
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Documents/Main/School/Uni/2026/W - Project/Library/wanderer/src/wanderer/Stochastics/KLDecomposition.py:52</span>, in <span class="ansi-cyan-fg">outOfTimeSimulationKL</span><span class="ansi-blue-fg">(distributions, eigenfunctions, time_step, time_horizon, num_paths)</span>
+<span class="ansi-green-fg">     49</span>     coeffs = distributions[row, :].reshape(<span class="ansi-green-fg">1</span>, -<span class="ansi-green-fg">1</span>)
+<span class="ansi-green-fg">     51</span>     <span style="font-style:italic;color:rgb(95,135,135)">#reconstruct path from sampled coefficients</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">52</span>     <span class="ansi-black-fg ansi-yellow-bg">simulated_paths</span><span class="ansi-black-fg ansi-yellow-bg">[</span><span class="ansi-black-fg ansi-yellow-bg">i</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">:</span><span class="ansi-black-fg ansi-yellow-bg">]</span> = reconstructFromKL(coeffs, eigenfunctions, time_grid, time_horizon).paths[<span class="ansi-green-fg">0</span>, :]
+<span class="ansi-green-fg">     54</span> <span style="font-style:italic;color:rgb(95,135,135)">#return the simulated paths as a StochasticProcess object</span>
+<span class="ansi-green-fg">     55</span> <span style="font-weight:bold;color:rgb(0,135,0)">return</span> StochasticProcess(paths=simulated_paths, timeHorizon=time_horizon, timeStep=time_step, method=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">KL Simulation</span><span class="ansi-yellow-fg">"</span>, num_paths=num_paths)
+
+<span class="ansi-red-fg">ValueError</span>: could not broadcast input array from shape (1001,) into shape (1000,)</pre>
+</div>
+</div>
+</div>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
